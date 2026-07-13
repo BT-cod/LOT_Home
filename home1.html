@@ -1,0 +1,2926 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legend of Toys — Built for the Drift</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --asphalt: #16171b;
+            --asphalt-2: #1e2025;
+            --asphalt-3: #26282e;
+            --track-yellow: #f5c518;
+            --signal-red: #e8432e;
+            --circuit-green: #34c77b;
+            --concrete: #f2f0ea;
+            --steel: #9497a0;
+            --steel-dim: #5c5f68;
+            --line: #33353c;
+            --radius: 14px;
+            --container: 1180px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* This brand uses hard edges everywhere — no rounded corners, anywhere, ever. */
+        *,
+        *::before,
+        *::after {
+            border-radius: 0 !important;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--asphalt);
+            color: var(--concrete);
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        img {
+            max-width: 100%;
+            display: block;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        button {
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        h1,
+        h2,
+        h3,
+        .display {
+            font-family: 'Rajdhani', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.01em;
+        }
+
+        .wrap {
+            max-width: var(--container);
+            margin: 0 auto;
+            padding: 0 18px;
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--track-yellow);
+            outline-offset: 2px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.001ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        /* ---------- intro loader ---------- */
+        body.loading {
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .loader {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: var(--asphalt);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            transition: opacity 0.5s ease;
+        }
+
+        .loader__ring-wrap {
+            position: relative;
+            width: 168px;
+            height: 168px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loader__ring {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .loader__ring-track {
+            fill: none;
+            stroke: var(--asphalt-3);
+            stroke-width: 5;
+        }
+
+        .loader__ring-progress {
+            fill: none;
+            stroke: var(--track-yellow);
+            stroke-width: 5;
+            stroke-linecap: round;
+        }
+
+        .loader__ring-tick {
+            fill: var(--steel-dim);
+        }
+
+        .loader__logo {
+            width: 64px;
+            height: auto;
+            position: relative;
+            z-index: 2;
+            transition: transform 0.9s cubic-bezier(.7, 0, .15, 1), filter 0.4s ease;
+        }
+
+        .loader__pct {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--concrete);
+            letter-spacing: 0.08em;
+        }
+
+        .loader__caption {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10.5px;
+            color: var(--steel);
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            height: 14px;
+        }
+
+        .loader__flag {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+        }
+
+        .loader.zoom .loader__logo {
+            transform: scale(9);
+            filter: blur(0.5px);
+        }
+
+        .loader.zoom .loader__ring,
+        .loader.zoom .loader__pct,
+        .loader.zoom .loader__caption,
+        .loader.zoom .loader__flag {
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+
+        .loader.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader.done {
+            display: none;
+        }
+
+        .loader-flash {
+            position: fixed;
+            inset: 0;
+            z-index: 1001;
+            background: #fff;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.22s ease;
+        }
+
+        .loader-flash.show {
+            opacity: 1;
+        }
+
+        .loader-flash.fade {
+            opacity: 0;
+            transition: opacity 0.55s ease;
+        }
+
+        .loader-flash.done {
+            display: none;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .loader,
+            .loader * {
+                transition-duration: 0.01ms !important;
+            }
+
+            .loader-flash {
+                transition-duration: 0.01ms !important;
+            }
+
+            .loader.zoom .loader__logo {
+                transform: scale(4);
+            }
+        }
+
+        /* ---------- checkered divider (signature motif, used sparingly) ---------- */
+        .checker-strip {
+            height: 10px;
+            background-image:
+                linear-gradient(45deg, var(--asphalt) 25%, transparent 25%, transparent 75%, var(--asphalt) 75%),
+                linear-gradient(45deg, var(--asphalt) 25%, transparent 25%, transparent 75%, var(--asphalt) 75%);
+            background-color: var(--concrete);
+            background-size: 10px 10px;
+            background-position: 0 0, 5px 5px;
+        }
+
+        /* ---------- top promo LED ticker ---------- */
+        .pit-ticker {
+            background: #0d0e10;
+            border-bottom: 1px solid var(--line);
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 7px 0;
+        }
+
+        .pit-ticker__track {
+            display: flex;
+            width: max-content;
+            animation: ticker 22s linear infinite;
+            will-change: transform;
+        }
+
+        .pit-ticker__item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            flex: 0 0 auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            color: var(--track-yellow);
+            padding: 0 26px;
+            border-right: 1px solid var(--line);
+            white-space: nowrap;
+        }
+
+        .pit-ticker__dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--circuit-green);
+            box-shadow: 0 0 6px var(--circuit-green);
+            animation: blink 1.6s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0.25;
+            }
+        }
+
+        @keyframes ticker {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(-50%);
+            }
+        }
+
+        /* ---------- sticky header ---------- */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(22, 23, 27, 0.92);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 18px;
+        }
+
+        .nav__logo {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 22px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav__logo .dot {
+            color: var(--signal-red);
+        }
+
+        .nav__logo-img {
+            height: 30px;
+            width: auto;
+            display: block;
+        }
+
+        @media (min-width:1024px) {
+            .nav__logo-img {
+                height: 34px;
+            }
+        }
+
+        .nav__actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--concrete);
+            position: relative;
+        }
+
+        .icon-btn:hover {
+            background: var(--asphalt-2);
+            border-color: var(--line);
+        }
+
+        .icon-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: var(--signal-red);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav__desktop-links {
+            display: none;
+        }
+
+        /* mobile drawer */
+        .drawer-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            z-index: 150;
+        }
+
+        .drawer-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: 82%;
+            max-width: 340px;
+            background: var(--asphalt-2);
+            border-left: 1px solid var(--line);
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(.2, .8, .2, 1);
+            z-index: 151;
+            overflow-y: auto;
+        }
+
+        .drawer.open {
+            transform: translateX(0);
+        }
+
+        .drawer__head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .drawer__group {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .drawer__group h4 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--steel);
+            letter-spacing: 0.12em;
+            margin-bottom: 10px;
+        }
+
+        .drawer__group li a {
+            display: block;
+            padding: 9px 0;
+            font-size: 15.5px;
+            font-weight: 500;
+            color: var(--concrete);
+            border-bottom: 1px dashed var(--line);
+        }
+
+        .drawer__group li:last-child a {
+            border-bottom: none;
+        }
+
+        .drawer__group li a:hover {
+            color: var(--track-yellow);
+        }
+
+        /* search bar */
+        .search-bar {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.25s ease;
+            background: var(--asphalt-2);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .search-bar.open {
+            max-height: 70px;
+        }
+
+        .search-bar__inner {
+            display: flex;
+            gap: 8px;
+            padding: 12px 18px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            background: var(--asphalt);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 14px;
+            color: var(--concrete);
+            font-size: 14px;
+        }
+
+        .search-bar input:focus {
+            border-color: var(--track-yellow);
+        }
+
+        /* ---------- hero ---------- */
+        .hero {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero__slides {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+        }
+
+        .hero__slides::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hero__slide {
+            position: relative;
+            flex: 0 0 100%;
+            scroll-snap-align: start;
+            min-height: 78vh;
+            display: flex;
+            align-items: flex-end;
+            background: var(--asphalt);
+        }
+
+        .hero__slide img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 20%;
+            clip-path: polygon(0 0, 100% 0, 100% 92%, 0 100%);
+        }
+
+        .hero__slide::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(22, 23, 27, 0.15) 0%, rgba(22, 23, 27, 0.55) 55%, rgba(22, 23, 27, 0.97) 100%);
+        }
+
+        .hero__content {
+            position: relative;
+            z-index: 2;
+            padding: 0 20px 42px;
+            width: 100%;
+        }
+
+        .hero__eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11.5px;
+            letter-spacing: 0.14em;
+            color: var(--track-yellow);
+            background: rgba(245, 197, 24, 0.1);
+            border: 1px solid rgba(245, 197, 24, 0.4);
+            padding: 5px 10px;
+            border-radius: 100px;
+            margin-bottom: 14px;
+        }
+
+        .hero__title {
+            font-size: clamp(34px, 9vw, 64px);
+            font-weight: 700;
+            line-height: 0.98;
+            margin-bottom: 12px;
+        }
+
+        .hero__title em {
+            font-style: normal;
+            color: var(--track-yellow);
+        }
+
+        .hero__sub {
+            color: var(--steel);
+            font-size: 15px;
+            max-width: 420px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .hero__ctas {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            padding: 13px 22px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14.5px;
+            border: 1px solid transparent;
+            transition: transform 0.15s ease, background 0.15s ease;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn--primary {
+            background: var(--track-yellow);
+            color: #16171b;
+        }
+
+        .btn--primary:hover {
+            background: #ffd93d;
+        }
+
+        .btn--ghost {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--concrete);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .btn--ghost:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .btn--sm {
+            padding: 9px 14px;
+            font-size: 13px;
+            border-radius: 8px;
+        }
+
+        .btn--full {
+            width: 100%;
+        }
+
+        .hero__dots {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            padding: 14px 0 0;
+        }
+
+        .hero__dots button {
+            width: 22px;
+            height: 3px;
+            border: none;
+            background: var(--line);
+            border-radius: 2px;
+            transition: background 0.2s, width 0.2s;
+        }
+
+        .hero__dots button.active {
+            background: var(--track-yellow);
+            width: 34px;
+        }
+
+        /* ---------- trust strip ---------- */
+        .trust {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            padding: 26px 18px;
+            background: var(--asphalt-2);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .trust__item {
+            background: var(--asphalt);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .trust__item summary {
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .trust__item summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .trust__item svg {
+            width: 20px;
+            height: 20px;
+            color: var(--track-yellow);
+            flex-shrink: 0;
+        }
+
+        .trust__item p {
+            font-size: 12.5px;
+            color: var(--steel);
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .trust__more {
+            margin-left: auto;
+            color: var(--steel-dim);
+            font-size: 11px;
+        }
+
+        /* ---------- section headers ---------- */
+        .section {
+            padding: 44px 0;
+        }
+
+        .section__head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            padding: 0 18px;
+            margin-bottom: 18px;
+        }
+
+        .section__eyebrow {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.14em;
+            color: var(--signal-red);
+            margin-bottom: 6px;
+        }
+
+        .section__title {
+            font-size: clamp(24px, 5vw, 36px);
+            font-weight: 700;
+        }
+
+        .section__link {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--track-yellow);
+            white-space: nowrap;
+        }
+
+        /* center-aligned section variant */
+        .section--center .section__head {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .section--center .section__link {
+            margin-top: 8px;
+        }
+
+        .section--center .section__sub {
+            max-width: 480px;
+            margin: 8px auto 0;
+            color: var(--steel);
+            font-size: 13.5px;
+            line-height: 1.55;
+        }
+
+        /* ---------- stats strip ---------- */
+        .stats-strip {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1px;
+            background: var(--line);
+            border-top: 1px solid var(--line);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .stats-strip__item {
+            background: var(--asphalt);
+            padding: 26px 12px;
+            text-align: center;
+        }
+
+        .stats-strip__num {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: clamp(24px, 6vw, 32px);
+            color: var(--track-yellow);
+        }
+
+        .stats-strip__label {
+            font-size: 10.5px;
+            color: var(--steel);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-top: 5px;
+        }
+
+        /* ---------- comparison table ---------- */
+        .compare-wrap {
+            overflow-x: auto;
+            padding: 0 18px;
+            -webkit-overflow-scrolling: touch;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .compare-table {
+            width: 100%;
+            min-width: 600px;
+            border-collapse: collapse;
+            background: var(--asphalt-2);
+            border: 1px solid var(--line);
+        }
+
+        .compare-table th,
+        .compare-table td {
+            padding: 12px 16px;
+            text-align: center;
+            font-size: 13px;
+            border-bottom: 1px solid var(--line);
+            border-right: 1px solid var(--line);
+            white-space: nowrap;
+        }
+
+        .compare-table th:last-child,
+        .compare-table td:last-child {
+            border-right: none;
+        }
+
+        .compare-table th:first-child,
+        .compare-table td:first-child {
+            text-align: left;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--steel);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: sticky;
+            left: 0;
+            background: var(--asphalt-2);
+            z-index: 2;
+        }
+
+        .compare-table thead th {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 17px;
+            text-transform: uppercase;
+            padding-top: 16px;
+        }
+
+        .compare-table__price {
+            display: block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--steel);
+            font-weight: 500;
+            margin-top: 4px;
+            text-transform: none;
+        }
+
+        .compare-table__pick {
+            background: rgba(245, 197, 24, 0.08);
+            border-left: 2px solid var(--track-yellow);
+            border-right: 2px solid var(--track-yellow);
+        }
+
+        .compare-table__badge {
+            display: block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9.5px;
+            color: var(--asphalt);
+            background: var(--track-yellow);
+            padding: 2px 8px;
+            margin: 4px auto 0;
+            width: fit-content;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        .compare-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .compare-table tbody tr:hover td {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .compare-note {
+            text-align: center;
+            font-size: 11.5px;
+            color: var(--steel-dim);
+            margin-top: 12px;
+            padding: 0 18px;
+        }
+
+        /* ---------- find-your-ride quiz ---------- */
+        .quiz-card {
+            max-width: 460px;
+            margin: 0 18px;
+            background: var(--asphalt-2);
+            border: 1px solid var(--line);
+            padding: 26px 22px;
+            position: relative;
+        }
+
+        .quiz-progress {
+            height: 3px;
+            background: var(--asphalt-3);
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .quiz-progress span {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 0%;
+            background: var(--track-yellow);
+            transition: width 0.35s ease;
+        }
+
+        .quiz-step {
+            display: none;
+        }
+
+        .quiz-step.active {
+            display: block;
+            animation: fadeSlide 0.35s ease;
+        }
+
+        .quiz-step__q {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 20px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .quiz-opt {
+            text-align: left;
+            padding: 14px 16px;
+            background: var(--asphalt);
+            border: 1px solid var(--line);
+            color: var(--concrete);
+            font-size: 14.5px;
+            font-weight: 600;
+            transition: border-color 0.15s ease, background 0.15s ease;
+            width: 100%;
+        }
+
+        .quiz-opt:hover {
+            border-color: var(--track-yellow);
+            background: var(--asphalt-3);
+        }
+
+        .quiz-result {
+            display: none;
+            text-align: center;
+        }
+
+        .quiz-result.active {
+            display: block;
+            animation: fadeSlide 0.4s ease;
+        }
+
+        .quiz-result__label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.14em;
+            color: var(--signal-red);
+            margin-bottom: 14px;
+        }
+
+        .quiz-result__card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .quiz-result__card img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border: 1px solid var(--line);
+            background: #fff;
+        }
+
+        .quiz-result__name {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 20px;
+            text-transform: uppercase;
+            margin-top: 6px;
+        }
+
+        .quiz-result__price {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--track-yellow);
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .quiz-result__blurb {
+            font-size: 13px;
+            color: var(--steel);
+            max-width: 320px;
+            line-height: 1.5;
+        }
+
+        .quiz-result__ctas {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+
+        @keyframes fadeSlide {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ---------- category rail ---------- */
+        .cat-rail {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 0 18px 6px;
+            scroll-snap-type: x proximity;
+            scrollbar-width: none;
+        }
+
+        .cat-rail::-webkit-scrollbar {
+            display: none;
+        }
+
+        .cat-card {
+            position: relative;
+            flex: 0 0 140px;
+            height: 170px;
+            border-radius: var(--radius);
+            scroll-snap-align: start;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 14px;
+            border: 1px solid var(--line);
+        }
+
+        .cat-card__pattern {
+            position: absolute;
+            inset: 0;
+            opacity: 0.5;
+            background-size: 16px 16px;
+        }
+
+        .cat-card span {
+            position: relative;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            text-transform: uppercase;
+            line-height: 1.1;
+        }
+
+        .cat-card svg {
+            position: relative;
+            width: 26px;
+            height: 26px;
+            margin-bottom: 8px;
+            color: var(--asphalt);
+        }
+
+        .cat-card small {
+            position: relative;
+            font-size: 10.5px;
+            color: rgba(22, 23, 27, 0.65);
+            font-weight: 600;
+        }
+
+        .cat--drift {
+            background: linear-gradient(150deg, #f5c518, #e8432e);
+        }
+
+        .cat--offroad {
+            background: linear-gradient(150deg, #34c77b, #1b7f4c);
+        }
+
+        .cat--construction {
+            background: linear-gradient(150deg, #f5c518, #b8860b);
+        }
+
+        .cat--drone {
+            background: linear-gradient(150deg, #8ab4f8, #4457c9);
+            color: #fff;
+        }
+
+        .cat--drone span,
+        .cat--drone svg {
+            color: #fff;
+        }
+
+        .cat--drone small {
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        .cat--parts {
+            background: linear-gradient(150deg, #c9cdd6, #7a7f8a);
+        }
+
+        .cat--all {
+            background: linear-gradient(150deg, #e8432e, #8a1f14);
+            color: #fff;
+        }
+
+        .cat--all span,
+        .cat--all svg {
+            color: #fff;
+        }
+
+        .cat--all small {
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        .cat-card span,
+        .cat-card svg:not(.cat--drone svg) {
+            color: #16171b;
+        }
+
+        /* ---------- product rail ---------- */
+        .prod-rail {
+            display: flex;
+            gap: 14px;
+            overflow-x: auto;
+            padding: 0 18px 10px;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+        }
+
+        .prod-rail::-webkit-scrollbar {
+            display: none;
+        }
+
+        .prod-card {
+            flex: 0 0 220px;
+            scroll-snap-align: start;
+            background: var(--asphalt-2);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .prod-card__media {
+            position: relative;
+            aspect-ratio: 1/1;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .prod-card__media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .prod-card:hover .prod-card__media img {
+            transform: scale(1.06);
+        }
+
+        .prod-badge {
+            position: absolute;
+            top: 9px;
+            left: 9px;
+            background: var(--asphalt);
+            color: var(--track-yellow);
+            font-size: 10px;
+            font-weight: 700;
+            padding: 5px 9px;
+            border-radius: 100px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .stock-chip {
+            position: absolute;
+            top: 9px;
+            right: 9px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(22, 23, 27, 0.85);
+            color: var(--circuit-green);
+            font-size: 10px;
+            font-weight: 700;
+            padding: 5px 9px;
+            border-radius: 100px;
+        }
+
+        .stock-chip::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--circuit-green);
+        }
+
+        .prod-card__body {
+            padding: 13px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .prod-card__rating {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: var(--steel);
+        }
+
+        .prod-card__rating strong {
+            color: var(--track-yellow);
+        }
+
+        .prod-card__name {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            font-size: 16.5px;
+            text-transform: none;
+            letter-spacing: 0;
+            line-height: 1.25;
+        }
+
+        .prod-card__price {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .price-now {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--concrete);
+        }
+
+        .price-was {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--steel-dim);
+            text-decoration: line-through;
+        }
+
+        .price-off {
+            font-size: 10.5px;
+            color: var(--circuit-green);
+            font-weight: 700;
+            background: rgba(52, 199, 123, 0.12);
+            padding: 2px 6px;
+            border-radius: 5px;
+        }
+
+        .prod-card__tax {
+            font-size: 10px;
+            color: var(--steel-dim);
+        }
+
+        .swatches {
+            display: flex;
+            gap: 5px;
+        }
+
+        .swatch {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            border: 2px solid var(--asphalt-3);
+        }
+
+        .swatch-more {
+            font-size: 10px;
+            color: var(--steel);
+        }
+
+        .add-cart {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: var(--asphalt-3);
+            color: var(--concrete);
+            border: 1px solid var(--line);
+            padding: 10px;
+            border-radius: 9px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        .add-cart:hover {
+            background: var(--track-yellow);
+            color: var(--asphalt);
+            border-color: var(--track-yellow);
+        }
+
+        .add-cart svg {
+            width: 15px;
+            height: 15px;
+        }
+
+        /* ---------- build teaser ---------- */
+        .build-banner {
+            margin: 0 18px;
+            border-radius: 18px;
+            padding: 28px 20px;
+            background: repeating-linear-gradient(135deg, #1e2025 0 14px, #23252b 14px 28px);
+            border: 1px solid var(--line);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .build-banner::before {
+            content: 'COMING SOON';
+            position: absolute;
+            top: 14px;
+            right: -34px;
+            transform: rotate(35deg);
+            background: var(--signal-red);
+            color: #fff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 44px;
+            letter-spacing: 0.08em;
+        }
+
+        .build-banner h3 {
+            font-size: clamp(24px, 6vw, 32px);
+            margin-bottom: 8px;
+            max-width: 280px;
+        }
+
+        .build-banner p {
+            color: var(--steel);
+            font-size: 13.5px;
+            max-width: 320px;
+            margin-bottom: 18px;
+            line-height: 1.5;
+        }
+
+        /* ---------- reviews ---------- */
+        .reviews-head {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 0 18px;
+            margin-bottom: 20px;
+        }
+
+        .gauge {
+            flex-shrink: 0;
+        }
+
+        .reviews-head__score {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .reviews-head__label {
+            font-size: 12px;
+            color: var(--steel);
+        }
+
+        .review-rail {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 0 18px 8px;
+            scroll-snap-type: x proximity;
+            scrollbar-width: none;
+        }
+
+        .review-rail::-webkit-scrollbar {
+            display: none;
+        }
+
+        .review-card {
+            flex: 0 0 260px;
+            scroll-snap-align: start;
+            background: var(--asphalt-2);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .review-card__stars {
+            color: var(--track-yellow);
+            font-size: 13px;
+            letter-spacing: 2px;
+        }
+
+        .review-card__text {
+            font-size: 13.5px;
+            line-height: 1.55;
+            color: #dcdce0;
+            flex: 1;
+        }
+
+        .review-card__meta {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding-top: 8px;
+            border-top: 1px solid var(--line);
+        }
+
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--signal-red);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: 'Rajdhani', sans-serif;
+            flex-shrink: 0;
+        }
+
+        .review-card__who {
+            font-size: 12.5px;
+            font-weight: 600;
+        }
+
+        .review-card__product {
+            font-size: 11px;
+            color: var(--steel);
+        }
+
+        .verified {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 10px;
+            color: var(--circuit-green);
+            font-weight: 700;
+            margin-left: auto;
+        }
+
+        /* ---------- newsletter ---------- */
+        .newsletter {
+            margin: 0 18px;
+            border-radius: 18px;
+            padding: 30px 22px;
+            text-align: center;
+            background: linear-gradient(160deg, var(--track-yellow), #e8432e);
+            color: var(--asphalt);
+        }
+
+        .newsletter h3 {
+            font-size: clamp(24px, 6vw, 32px);
+            margin-bottom: 8px;
+            color: var(--asphalt);
+        }
+
+        .newsletter p {
+            font-size: 13.5px;
+            max-width: 360px;
+            margin: 0 auto 18px;
+            color: rgba(22, 23, 27, 0.8);
+        }
+
+        .newsletter form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 380px;
+            margin: 0 auto;
+        }
+
+        .newsletter input {
+            padding: 13px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(22, 23, 27, 0.2);
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .newsletter .btn--primary {
+            background: var(--asphalt);
+            color: var(--track-yellow);
+        }
+
+        .newsletter .btn--primary:hover {
+            background: #0d0e10;
+        }
+
+        .form-note {
+            font-size: 11px;
+            color: rgba(22, 23, 27, 0.65);
+            margin-top: 2px;
+        }
+
+        /* ---------- footer ---------- */
+        footer {
+            background: #0d0e10;
+            padding-top: 0;
+        }
+
+        .footer-inner {
+            padding: 38px 18px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .footer-brand .nav__logo {
+            margin-bottom: 12px;
+        }
+
+        .footer-brand p {
+            color: var(--steel);
+            font-size: 13px;
+            line-height: 1.6;
+            max-width: 340px;
+            margin-bottom: 16px;
+        }
+
+        .footer-india {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 11.5px;
+            color: var(--steel);
+            border: 1px solid var(--line);
+            padding: 6px 11px;
+            border-radius: 100px;
+            margin-bottom: 18px;
+        }
+
+        .social-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .social-row a {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--concrete);
+        }
+
+        .social-row a:hover {
+            background: var(--track-yellow);
+            color: var(--asphalt);
+            border-color: var(--track-yellow);
+        }
+
+        .social-row svg {
+            width: 17px;
+            height: 17px;
+        }
+
+        .footer-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .footer-col h4 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            color: var(--steel);
+            margin-bottom: 14px;
+        }
+
+        .footer-col li a {
+            display: block;
+            font-size: 13.5px;
+            color: #d2d3d8;
+            padding: 6px 0;
+        }
+
+        .footer-col li a:hover {
+            color: var(--track-yellow);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--line);
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            text-align: center;
+        }
+
+        .footer-bottom__copy {
+            font-size: 11.5px;
+            color: var(--steel-dim);
+        }
+
+        .pay-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .pay-chip {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--steel);
+            border: 1px solid var(--line);
+            padding: 4px 8px;
+            border-radius: 5px;
+        }
+
+        .to-top {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: var(--asphalt-2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--track-yellow);
+        }
+
+        /* toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(120%);
+            background: var(--asphalt-2);
+            border: 1px solid var(--track-yellow);
+            color: var(--concrete);
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 300;
+            transition: transform 0.3s cubic-bezier(.2, .8, .2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast svg {
+            width: 16px;
+            height: 16px;
+            color: var(--circuit-green);
+        }
+
+        /* ---------- tablet / desktop ---------- */
+        @media (min-width:768px) {
+            .wrap {
+                padding: 0 32px;
+            }
+
+            .trust {
+                grid-template-columns: repeat(4, 1fr);
+                padding: 28px 32px;
+            }
+
+            .footer-cols {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .footer-inner {
+                padding: 48px 32px 24px;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: space-between;
+            }
+
+            .footer-brand {
+                flex: 0 0 100%;
+            }
+
+            .footer-bottom {
+                flex-direction: row;
+                justify-content: space-between;
+                padding: 20px 32px;
+            }
+
+            .hero__content,
+            .section__head,
+            .cat-rail,
+            .prod-rail,
+            .review-rail,
+            .reviews-head {
+                padding-left: 32px;
+                padding-right: 32px;
+            }
+
+            .build-banner,
+            .newsletter {
+                margin: 0 32px;
+            }
+
+            #categories .cat-rail,
+            #products .prod-rail,
+            #reviews .review-rail {
+                flex-wrap: wrap;
+                justify-content: center;
+                overflow: visible;
+                scroll-snap-type: none;
+            }
+
+            .quiz-card {
+                margin: 0 auto;
+            }
+
+            .compare-wrap {
+                padding: 0 32px;
+                justify-content: center;
+            }
+        }
+
+        @media (min-width:1024px) {
+            .nav {
+                padding: 14px 32px;
+            }
+
+            .nav__desktop-links {
+                display: flex;
+                align-items: center;
+                gap: 26px;
+                margin-right: auto;
+                margin-left: 36px;
+            }
+
+            .nav__desktop-links>li {
+                position: relative;
+            }
+
+            .nav__desktop-links>li>a {
+                font-size: 14px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                padding: 8px 0;
+            }
+
+            .nav__desktop-links>li>a:hover {
+                color: var(--track-yellow);
+            }
+
+            .mega {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                background: var(--asphalt-2);
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                padding: 14px;
+                min-width: 200px;
+                opacity: 0;
+                pointer-events: none;
+                transform: translateY(6px);
+                transition: all 0.18s ease;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            }
+
+            .nav__desktop-links>li:hover .mega {
+                opacity: 1;
+                pointer-events: auto;
+                transform: translateY(0);
+            }
+
+            .mega li a {
+                display: block;
+                padding: 8px 10px;
+                border-radius: 7px;
+                font-size: 13.5px;
+                font-weight: 500;
+            }
+
+            .mega li a:hover {
+                background: var(--asphalt-3);
+                color: var(--track-yellow);
+            }
+
+            .hamburger {
+                display: none;
+            }
+
+            .hero__slide {
+                min-height: 88vh;
+            }
+
+            .cat-card {
+                flex: 0 0 200px;
+                height: 220px;
+            }
+
+            .prod-card {
+                flex: 0 0 260px;
+            }
+
+            .footer-brand {
+                flex: 0 0 30%;
+            }
+
+            .footer-cols {
+                flex: 1;
+            }
+        }
+
+        @media (min-width:1024px) and (max-width:1500px) {
+            .nav__desktop-links {
+                gap: 18px;
+                margin-left: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ===== INTRO LOADER ===== -->
+    <noscript>
+        <style>
+            #loader {
+                display: none !important;
+            }
+
+            body {
+                overflow: auto !important;
+                height: auto !important;
+            }
+        </style>
+    </noscript>
+    <div class="loader" id="loader" role="status" aria-live="polite" aria-label="Loading Legend of Toys">
+        <div class="loader__ring-wrap">
+            <svg class="loader__ring" viewBox="0 0 180 180">
+                <circle class="loader__ring-track" cx="90" cy="90" r="80" />
+                <circle class="loader__ring-progress" id="loaderRing" cx="90" cy="90" r="80" />
+            </svg>
+            <img src="data:image/png;base64,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"
+                alt="Legend of Toys" class="loader__logo" id="loaderLogo">
+        </div>
+        <div class="loader__pct" id="loaderPct">0%</div>
+        <div class="loader__caption" id="loaderCaption">IGNITING ENGINE…</div>
+        <div class="loader__flag checker-strip"></div>
+    </div>
+    <div class="loader-flash" id="loaderFlash" aria-hidden="true"></div>
+
+    <!-- ===== PIT TICKER ===== -->
+    <div class="pit-ticker" aria-hidden="true">
+        <div class="pit-ticker__track">
+            <span class="pit-ticker__item"><span class="pit-ticker__dot"></span>NEW HERE? CODE LOTENTRY FOR 5%
+                OFF</span>
+            <span class="pit-ticker__item"><span class="pit-ticker__dot"></span>PAY PREPAID, GET 3% EXTRA OFF</span>
+            <span class="pit-ticker__item"><span class="pit-ticker__dot"></span>FREE LIFETIME SUPPORT ON EVERY
+                BUILD</span>
+            <span class="pit-ticker__item"><span class="pit-ticker__dot"></span>NEW HERE? CODE LOTENTRY FOR 5%
+                OFF</span>
+            <span class="pit-ticker__item"><span class="pit-ticker__dot"></span>PAY PREPAID, GET 3% EXTRA OFF</span>
+            <span class="pit-ticker__item"><span class="pit-ticker__dot"></span>FREE LIFETIME SUPPORT ON EVERY
+                BUILD</span>
+        </div>
+    </div>
+
+    <!-- ===== HEADER (sticky) ===== -->
+    <header>
+        <nav class="nav">
+            <a href="#top" class="nav__logo"><img
+                    src="data:image/png;base64,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"
+                    alt="Legend of Toys" class="nav__logo-img"></a>
+
+            <ul class="nav__desktop-links">
+                <li><a href="#categories">Shop <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="3">
+                            <path d="M6 9l6 6 6-6" />
+                        </svg>
+                        <ul class="mega">
+                            <li><a href="#products">Drift Cars</a></li>
+                            <li><a href="#categories">Off-Road & Trucks</a></li>
+                            <li><a href="#categories">RC Construction</a></li>
+                            <li><a href="#categories">Drones</a></li>
+                            <li><a href="#categories">Spare Parts</a></li>
+                            <li><a href="#categories">Shop All</a></li>
+                        </ul>
+                </li>
+                <li><a href="#products">Bestsellers</a></li>
+                <li><a href="#compare">Compare</a></li>
+                <li><a href="#quiz">Find My Ride</a></li>
+                <li><a href="#build">L.O.T Build</a></li>
+                <li><a href="#more">Explore <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="3">
+                            <path d="M6 9l6 6 6-6" />
+                        </svg>
+                        <ul class="mega">
+                            <li><a href="#">L.O.T Comics</a></li>
+                            <li><a href="#">L.O.T Universe</a></li>
+                            <li><a href="#">Blog</a></li>
+                            <li><a href="#reviews">Reviews</a></li>
+                        </ul>
+                </li>
+                <li><a href="#footer">Support</a></li>
+            </ul>
+
+            <div class="nav__actions">
+                <button class="icon-btn" id="searchToggle" aria-label="Search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="7" />
+                        <path d="M21 21l-4.3-4.3" />
+                    </svg>
+                </button>
+                <button class="icon-btn" aria-label="Account">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="8" r="4" />
+                        <path d="M4 21c1.5-4.5 5-6 8-6s6.5 1.5 8 6" />
+                    </svg>
+                </button>
+                <button class="icon-btn" aria-label="Cart">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 6h15l-1.5 9h-12z" />
+                        <circle cx="9" cy="20" r="1" />
+                        <circle cx="18" cy="20" r="1" />
+                        <path d="M6 6L5 3H2" />
+                    </svg>
+                    <span class="cart-count">0</span>
+                </button>
+                <button class="icon-btn" id="drawerToggle" aria-label="Menu" style="display:flex">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 7h16M4 12h16M4 17h16" />
+                    </svg>
+                </button>
+            </div>
+        </nav>
+
+        <div class="search-bar" id="searchBar">
+            <div class="search-bar__inner">
+                <input type="text" placeholder="Search drift cars, trucks, drones…">
+                <button class="btn btn--primary btn--sm">Go</button>
+            </div>
+        </div>
+    </header>
+
+    <style>
+        #drawerToggle {
+            display: flex;
+        }
+
+        @media(min-width:1024px) {
+            #drawerToggle {
+                display: none;
+            }
+        }
+    </style>
+
+    <!-- ===== MOBILE DRAWER ===== -->
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <aside class="drawer" id="drawer">
+        <div class="drawer__head">
+            <span class="nav__logo" style="font-size:14px; letter-spacing:0.14em; color:var(--steel);">MENU</span>
+            <button class="icon-btn" id="drawerClose" aria-label="Close menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
+            </button>
+        </div>
+        <div class="drawer__group">
+            <h4>SHOP</h4>
+            <ul>
+                <li><a href="#categories">Drift RC Cars</a></li>
+                <li><a href="#categories">Off-Road & Trucks</a></li>
+                <li><a href="#categories">RC Construction</a></li>
+                <li><a href="#categories">Drones</a></li>
+                <li><a href="#categories">Spare Parts</a></li>
+                <li><a href="#categories">Shop All</a></li>
+            </ul>
+        </div>
+        <div class="drawer__group">
+            <h4>DISCOVER</h4>
+            <ul>
+                <li><a href="#products">Bestsellers</a></li>
+                <li><a href="#compare">Compare Drift Cars</a></li>
+                <li><a href="#quiz">Find My Ride</a></li>
+                <li><a href="#build">L.O.T Build (Coming Soon)</a></li>
+                <li><a href="#reviews">Reviews</a></li>
+                <li><a href="#">L.O.T Comics</a></li>
+                <li><a href="#">L.O.T Universe</a></li>
+                <li><a href="#">Blog</a></li>
+            </ul>
+        </div>
+        <div class="drawer__group">
+            <h4>SUPPORT</h4>
+            <ul>
+                <li><a href="#">L.O.T Promise</a></li>
+                <li><a href="#">Contact Us</a></li>
+                <li><a href="#">FAQs</a></li>
+                <li><a href="#">Shipping & Returns</a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero" id="top">
+        <div class="hero__slides" id="heroSlides">
+            <div class="hero__slide">
+                <img src="https://www.legendoftoys.com/cdn/shop/files/Burnout_green_cc37e491-35c7-4871-85c1-e701d0f147fb.webp?v=1783664258&width=2048"
+                    alt="Flare 2.0 RC drift car sliding sideways">
+                <div class="hero__content">
+                    <span class="hero__eyebrow">DRIFT SERIES · FLARE 2.0</span>
+                    <h1 class="hero__title">BUILD YOUR<br><em>LEGACY.</em></h1>
+                    <p class="hero__sub">4WD drift performance, swappable body shells, and a chassis built to take a
+                        beating — then take another lap.</p>
+                    <div class="hero__ctas">
+                        <a href="#products" class="btn btn--primary">Shop Flare 2.0</a>
+                        <a href="#categories" class="btn btn--ghost">Explore Drift Cars</a>
+                    </div>
+                </div>
+            </div>
+            <div class="hero__slide">
+                <img src="https://www.legendoftoys.com/cdn/shop/files/Asset_16_1647a943-9a25-4169-bfce-7da7348ba3f0.webp?v=1783498448&width=1501"
+                    alt="Knox off-road RC truck on dirt">
+                <div class="hero__content">
+                    <span class="hero__eyebrow">OFF-ROAD SERIES · KNOX</span>
+                    <h1 class="hero__title">GO BEYOND<br><em>THE TRACK.</em></h1>
+                    <p class="hero__sub">All-terrain grip and a reinforced suspension for mud, gravel, and everything
+                        your backyard can throw at it.</p>
+                    <div class="hero__ctas">
+                        <a href="#products" class="btn btn--primary">Shop Off-Road</a>
+                        <a href="#categories" class="btn btn--ghost">See All Trucks</a>
+                    </div>
+                </div>
+            </div>
+            <div class="hero__slide">
+                <img src="https://www.legendoftoys.com/cdn/shop/files/Asset_37.webp?v=1779879531&width=1501"
+                    alt="Ghost RC drift car glowing on track">
+                <div class="hero__content">
+                    <span class="hero__eyebrow">BESTSELLER · GHOST</span>
+                    <h1 class="hero__title">LIGHT UP<br><em>THE TRACK.</em></h1>
+                    <p class="hero__sub">Our most-loved drift car — LED underglow, 4-wheel drive, and a fanbase of 148
+                        five-star drifters.</p>
+                    <div class="hero__ctas">
+                        <a href="#products" class="btn btn--primary">Shop Ghost</a>
+                        <a href="#reviews" class="btn btn--ghost">Read Reviews</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="hero__dots" id="heroDots"></div>
+    </section>
+
+    <div class="checker-strip"></div>
+
+    <!-- ===== TRUST STRIP (now with tap-to-expand proof, fixes vague badges) ===== -->
+    <div class="trust">
+        <details class="trust__item">
+            <summary><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z" />
+                </svg>Free Lifetime Support<span class="trust__more">＋</span></summary>
+            <p>Every RC comes with a lifetime repair card — damaged parts get replaced for the cost of shipping, no
+                questions asked.</p>
+        </details>
+        <details class="trust__item">
+            <summary><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 12l2 2 4-4M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7z" />
+                </svg>20-Point QC<span class="trust__more">＋</span></summary>
+            <p>Every unit is bench-tested on motor draw, steering trim, battery seating, and 17 other checks before it
+                ships.</p>
+        </details>
+        <details class="trust__item">
+            <summary><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                    <path d="M3 10h18" />
+                </svg>BIS Certified<span class="trust__more">＋</span></summary>
+            <p>Certified to Bureau of Indian Standards safety requirements for electrical and battery-powered toys.</p>
+        </details>
+        <details class="trust__item">
+            <summary><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v20M2 12h20" />
+                </svg>Made in India<span class="trust__more">＋</span></summary>
+            <p>Designed and assembled in India, with a domestic parts pipeline so repairs and spares ship fast.</p>
+        </details>
+    </div>
+
+    <!-- ===== STATS STRIP (interactive count-up on scroll) ===== -->
+    <section class="stats-strip" id="statsStrip" aria-label="Legend of Toys, by the numbers">
+        <div class="stats-strip__item">
+            <div class="stats-strip__num" data-target="12000" data-suffix="+">0</div>
+            <div class="stats-strip__label">Cars Shipped</div>
+        </div>
+        <div class="stats-strip__item">
+            <div class="stats-strip__num" data-target="45" data-suffix="">0</div>
+            <div class="stats-strip__label">Cities Racing L.O.T</div>
+        </div>
+        <div class="stats-strip__item">
+            <div class="stats-strip__num" data-target="45" data-divide="10" data-suffix="/5">0</div>
+            <div class="stats-strip__label">Average Rating</div>
+        </div>
+        <div class="stats-strip__item">
+            <div class="stats-strip__num" data-target="24" data-suffix="hr">0</div>
+            <div class="stats-strip__label">Repair Turnaround</div>
+        </div>
+    </section>
+
+    <!-- ===== CATEGORIES ===== -->
+    <section class="section section--center" id="categories">
+        <div class="section__head">
+            <div>
+                <div class="section__eyebrow">PICK YOUR LANE</div>
+                <h2 class="section__title">Shop by Category</h2>
+            </div>
+        </div>
+        <div class="cat-rail">
+            <a href="#products" class="cat-card cat--drift">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="12" r="9" />
+                    <circle cx="12" cy="12" r="3" fill="#f5c518" />
+                </svg>
+                <span>Drift Cars</span><small>32 models</small>
+            </a>
+            <a href="#products" class="cat-card cat--offroad">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 18l4-8 5 3 4-9 5 14z" />
+                </svg>
+                <span>Off-Road & Trucks</span><small>18 models</small>
+            </a>
+            <a href="#products" class="cat-card cat--construction">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 21V10l6-4v15M14 21V6l6 4v11M4 21h16" />
+                </svg>
+                <span>RC Construction</span><small>9 models</small>
+            </a>
+            <a href="#products" class="cat-card cat--drone">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="2" />
+                    <path d="M4 4l6 6M20 4l-6 6M4 20l6-6M20 20l-6-6" />
+                </svg>
+                <span>Drones</span><small>Aviation series</small>
+            </a>
+            <a href="#products" class="cat-card cat--parts">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3" />
+                    <path
+                        d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.5 1h.1a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z" />
+                </svg>
+                <span>Spare Parts</span><small>Keep it running</small>
+            </a>
+            <a href="#products" class="cat-card cat--all">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                <span>Shop All</span><small>Full catalog</small>
+            </a>
+        </div>
+    </section>
+
+    <!-- ===== BESTSELLERS (merged — was duplicated as two sections on the live site) ===== -->
+    <section class="section section--center" id="products">
+        <div class="section__head">
+            <div>
+                <div class="section__eyebrow">FAN FAVOURITES</div>
+                <h2 class="section__title">Bestsellers</h2>
+            </div>
+            <a href="#" class="section__link">View all →</a>
+        </div>
+        <div class="prod-rail" id="prodRail">
+
+            <article class="prod-card">
+                <div class="prod-card__media">
+                    <span class="prod-badge">Bestseller</span>
+                    <span class="stock-chip">In Stock</span>
+                    <img src="https://www.legendoftoys.com/cdn/shop/files/Asset_37.webp?v=1779879531&width=1501"
+                        alt="Ghost RC drift car">
+                </div>
+                <div class="prod-card__body">
+                    <div class="prod-card__rating">★★★★★ <strong>4.6</strong> (148)</div>
+                    <h3 class="prod-card__name">L.O.T Cars Ghost — RC Drift Car</h3>
+                    <div class="swatches"><span class="swatch" style="background:#f5c518"></span><span class="swatch"
+                            style="background:#e8432e"></span><span class="swatch"
+                            style="background:#f2f0ea"></span><span class="swatch-more">+6</span></div>
+                    <div class="prod-card__price"><span class="price-now">₹2,099</span><span
+                            class="price-was">₹3,499</span><span class="price-off">40% OFF</span></div>
+                    <span class="prod-card__tax">Inclusive of all taxes</span>
+                    <button class="add-cart" onclick="addToCart('Ghost')"><svg viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M6 6h15l-1.5 9h-12z" />
+                            <circle cx="9" cy="20" r="1" />
+                            <circle cx="18" cy="20" r="1" />
+                        </svg>Add to cart</button>
+                </div>
+            </article>
+
+            <article class="prod-card">
+                <div class="prod-card__media">
+                    <span class="prod-badge">Most reviewed</span>
+                    <span class="stock-chip">In Stock</span>
+                    <img src="https://www.legendoftoys.com/cdn/shop/files/Burnout_green_cc37e491-35c7-4871-85c1-e701d0f147fb.webp?v=1783664258&width=2048"
+                        alt="Flare 2.0 RC drift car">
+                </div>
+                <div class="prod-card__body">
+                    <div class="prod-card__rating">★★★★★ <strong>4.5</strong> (253)</div>
+                    <h3 class="prod-card__name">L.O.T Cars Flare 2.0 — RC Drift Car</h3>
+                    <div class="swatches"><span class="swatch" style="background:#34c77b"></span><span class="swatch"
+                            style="background:#8a8d93"></span><span class="swatch"
+                            style="background:#e8432e"></span><span class="swatch-more">+2</span></div>
+                    <div class="prod-card__price"><span class="price-now">₹2,199</span><span
+                            class="price-was">₹3,999</span><span class="price-off">45% OFF</span></div>
+                    <span class="prod-card__tax">Inclusive of all taxes</span>
+                    <button class="add-cart" onclick="addToCart('Flare 2.0')"><svg viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M6 6h15l-1.5 9h-12z" />
+                            <circle cx="9" cy="20" r="1" />
+                            <circle cx="18" cy="20" r="1" />
+                        </svg>Add to cart</button>
+                </div>
+            </article>
+
+            <article class="prod-card">
+                <div class="prod-card__media">
+                    <span class="prod-badge">Best for drifting</span>
+                    <span class="stock-chip">In Stock</span>
+                    <img src="https://www.legendoftoys.com/cdn/shop/files/Asset_22_1_7e724842-fa51-458b-827e-7f9b9a9fbac4.webp?v=1783517103&width=1501"
+                        alt="Shadow RC drift car">
+                </div>
+                <div class="prod-card__body">
+                    <div class="prod-card__rating">★★★★★ <strong>4.3</strong> (97)</div>
+                    <h3 class="prod-card__name">L.O.T Cars Shadow — RC Drift Car</h3>
+                    <div class="swatches"><span class="swatch" style="background:#16171b"></span><span class="swatch"
+                            style="background:#26282e"></span><span class="swatch"
+                            style="background:#e8432e"></span><span class="swatch-more">+2</span></div>
+                    <div class="prod-card__price"><span class="price-now">₹2,199</span><span
+                            class="price-was">₹3,999</span><span class="price-off">45% OFF</span></div>
+                    <span class="prod-card__tax">Inclusive of all taxes</span>
+                    <button class="add-cart" onclick="addToCart('Shadow')"><svg viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M6 6h15l-1.5 9h-12z" />
+                            <circle cx="9" cy="20" r="1" />
+                            <circle cx="18" cy="20" r="1" />
+                        </svg>Add to cart</button>
+                </div>
+            </article>
+
+            <article class="prod-card">
+                <div class="prod-card__media">
+                    <span class="prod-badge">Mechanic's pick</span>
+                    <span class="stock-chip">In Stock</span>
+                    <img src="https://www.legendoftoys.com/cdn/shop/files/fang.webp?v=1771092286&width=1501"
+                        alt="Fang RC excavator">
+                </div>
+                <div class="prod-card__body">
+                    <div class="prod-card__rating">★★★★★ <strong>4.2</strong> (70)</div>
+                    <h3 class="prod-card__name">L.O.T Cars Fang — 6-Channel RC Excavator</h3>
+                    <div class="swatches"><span class="swatch" style="background:#f5c518"></span></div>
+                    <div class="prod-card__price"><span class="price-now">₹1,999</span><span
+                            class="price-was">₹2,499</span><span class="price-off">20% OFF</span></div>
+                    <span class="prod-card__tax">Inclusive of all taxes</span>
+                    <button class="add-cart" onclick="addToCart('Fang')"><svg viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M6 6h15l-1.5 9h-12z" />
+                            <circle cx="9" cy="20" r="1" />
+                            <circle cx="18" cy="20" r="1" />
+                        </svg>Add to cart</button>
+                </div>
+            </article>
+
+            <article class="prod-card">
+                <div class="prod-card__media">
+                    <span class="prod-badge">Best for off-road</span>
+                    <span class="stock-chip">In Stock</span>
+                    <img src="https://www.legendoftoys.com/cdn/shop/files/Asset_16_1647a943-9a25-4169-bfce-7da7348ba3f0.webp?v=1783498448&width=1501"
+                        alt="Knox off-road RC truck">
+                </div>
+                <div class="prod-card__body">
+                    <div class="prod-card__rating">★★★★★ <strong>4.5</strong> (79)</div>
+                    <h3 class="prod-card__name">L.O.T Cars Knox — Off-Road RC Truck</h3>
+                    <div class="swatches"><span class="swatch" style="background:#34c77b"></span><span class="swatch"
+                            style="background:#16171b"></span><span class="swatch-more">+2</span></div>
+                    <div class="prod-card__price"><span class="price-now">₹1,599</span><span
+                            class="price-was">₹2,499</span><span class="price-off">36% OFF</span></div>
+                    <span class="prod-card__tax">Inclusive of all taxes</span>
+                    <button class="add-cart" onclick="addToCart('Knox')"><svg viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M6 6h15l-1.5 9h-12z" />
+                            <circle cx="9" cy="20" r="1" />
+                            <circle cx="18" cy="20" r="1" />
+                        </svg>Add to cart</button>
+                </div>
+            </article>
+
+            <article class="prod-card">
+                <div class="prod-card__media">
+                    <span class="prod-badge">1:64 scale</span>
+                    <span class="stock-chip">In Stock</span>
+                    <img src="https://www.legendoftoys.com/cdn/shop/files/Asset_5_1.webp?v=1783517689&width=1501"
+                        alt="Dash mini RC car">
+                </div>
+                <div class="prod-card__body">
+                    <div class="prod-card__rating">★★★★★ <strong>4.6</strong> (60)</div>
+                    <h3 class="prod-card__name">L.O.T Cars Dash — Mini RC Car</h3>
+                    <div class="swatches"><span class="swatch" style="background:#f2f0ea"></span><span class="swatch"
+                            style="background:#34c77b"></span><span class="swatch"
+                            style="background:#16171b"></span><span class="swatch-more">+1</span></div>
+                    <div class="prod-card__price"><span class="price-now">₹2,099</span><span
+                            class="price-was">₹3,999</span><span class="price-off">48% OFF</span></div>
+                    <span class="prod-card__tax">Inclusive of all taxes</span>
+                    <button class="add-cart" onclick="addToCart('Dash')"><svg viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M6 6h15l-1.5 9h-12z" />
+                            <circle cx="9" cy="20" r="1" />
+                            <circle cx="18" cy="20" r="1" />
+                        </svg>Add to cart</button>
+                </div>
+            </article>
+
+        </div>
+    </section>
+
+    <!-- ===== COMPARISON TABLE ===== -->
+    <section class="section section--center" id="compare">
+        <div class="section__head">
+            <div>
+                <div class="section__eyebrow">SPEC CHECK</div>
+                <h2 class="section__title">Compare the Drift Series</h2>
+                <p class="section__sub">Same track, three different builds. Here's how our top drift cars actually stack
+                    up.</p>
+            </div>
+        </div>
+        <div class="compare-wrap">
+            <table class="compare-table">
+                <thead>
+                    <tr>
+                        <th>Specs</th>
+                        <th>Shadow<span class="compare-table__price">₹2,199</span></th>
+                        <th class="compare-table__pick">Flare 2.0<span class="compare-table__badge">Editor's
+                                Pick</span><span class="compare-table__price">₹2,199</span></th>
+                        <th>Ghost<span class="compare-table__price">₹2,099</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Drive type</td>
+                        <td>2WD</td>
+                        <td class="compare-table__pick">4WD</td>
+                        <td>4WD</td>
+                    </tr>
+                    <tr>
+                        <td>Top speed</td>
+                        <td>18 km/h</td>
+                        <td class="compare-table__pick">22 km/h</td>
+                        <td>24 km/h</td>
+                    </tr>
+                    <tr>
+                        <td>Battery</td>
+                        <td>650mAh · 20 min runtime</td>
+                        <td class="compare-table__pick">800mAh · 25 min runtime</td>
+                        <td>800mAh · 25 min runtime</td>
+                    </tr>
+                    <tr>
+                        <td>Charge time</td>
+                        <td>60 min</td>
+                        <td class="compare-table__pick">50 min</td>
+                        <td>50 min</td>
+                    </tr>
+                    <tr>
+                        <td>LED underglow</td>
+                        <td>—</td>
+                        <td class="compare-table__pick">—</td>
+                        <td>✓</td>
+                    </tr>
+                    <tr>
+                        <td>Swappable body shells</td>
+                        <td>✓</td>
+                        <td class="compare-table__pick">✓</td>
+                        <td>✓</td>
+                    </tr>
+                    <tr>
+                        <td>Best for</td>
+                        <td>Beginners</td>
+                        <td class="compare-table__pick">All-round drifting</td>
+                        <td>Trick &amp; show drifting</td>
+                    </tr>
+                    <tr>
+                        <td>Rating</td>
+                        <td>4.3★ (97 reviews)</td>
+                        <td class="compare-table__pick">4.5★ (253 reviews)</td>
+                        <td>4.6★ (148 reviews)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="compare-note">Swipe sideways on mobile to see every column · Specs sourced from product listings</p>
+    </section>
+
+    <!-- ===== FIND YOUR RIDE (interactive quiz) ===== -->
+    <section class="section section--center" id="quiz">
+        <div class="section__head">
+            <div>
+                <div class="section__eyebrow">60-SECOND FINDER</div>
+                <h2 class="section__title">Find Your Ride</h2>
+                <p class="section__sub">Three quick questions, one honest recommendation — no sign-up required.</p>
+            </div>
+        </div>
+
+        <div class="quiz-card" id="quizCard">
+            <div class="quiz-progress"><span id="quizProgressFill"></span></div>
+
+            <div class="quiz-step active" data-step="1">
+                <div class="quiz-step__q">What matters most to you?</div>
+                <div class="quiz-options">
+                    <button class="quiz-opt" data-key="priority" data-value="speed">⚡ Raw speed</button>
+                    <button class="quiz-opt" data-key="priority" data-value="style">🎨 Style &amp; looks</button>
+                    <button class="quiz-opt" data-key="priority" data-value="tough">🛠 Toughness</button>
+                </div>
+            </div>
+
+            <div class="quiz-step" data-step="2">
+                <div class="quiz-step__q">What's your skill level?</div>
+                <div class="quiz-options">
+                    <button class="quiz-opt" data-key="skill" data-value="beginner">🟢 Just starting out</button>
+                    <button class="quiz-opt" data-key="skill" data-value="pro">🔴 Been drifting a while</button>
+                </div>
+            </div>
+
+            <div class="quiz-step" data-step="3">
+                <div class="quiz-step__q">Where will you ride?</div>
+                <div class="quiz-options">
+                    <button class="quiz-opt" data-key="terrain" data-value="indoor">🏠 Indoor, smooth floors</button>
+                    <button class="quiz-opt" data-key="terrain" data-value="outdoor">🌳 Outdoor, rougher ground</button>
+                </div>
+            </div>
+
+            <div class="quiz-result" data-step="result">
+                <div class="quiz-result__label">YOUR MATCH</div>
+                <div class="quiz-result__card" id="quizResultCard"></div>
+                <div class="quiz-result__ctas">
+                    <button class="btn btn--primary btn--sm" id="quizAddCart">Add to cart</button>
+                    <button class="btn btn--ghost btn--sm" id="quizRestart">Start over</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== L.O.T BUILD TEASER (fixed dead "Join the Build" link) ===== -->
+    <section class="section" id="build">
+        <div class="build-banner">
+            <h3>L.O.T Build.<br>Build it. Race it. Own it.</h3>
+            <p>Our DIY build kits land soon. Join the waitlist and get first access, plus a launch-day discount code.
+            </p>
+            <a href="#newsletter" class="btn btn--primary">Join the Waitlist</a>
+        </div>
+    </section>
+
+    <!-- ===== REVIEWS ===== -->
+    <section class="section section--center" id="reviews">
+        <div class="reviews-head">
+            <svg class="gauge" width="70" height="44" viewBox="0 0 100 60">
+                <path d="M10 55 A40 40 0 0 1 90 55" fill="none" stroke="#26282e" stroke-width="8"
+                    stroke-linecap="round" />
+                <path d="M10 55 A40 40 0 0 1 90 55" fill="none" stroke="#f5c518" stroke-width="8" stroke-linecap="round"
+                    stroke-dasharray="113" stroke-dashoffset="11.3" />
+            </svg>
+            <div>
+                <div class="reviews-head__score">4.5 <span style="font-size:14px; color:var(--steel);">/ 5</span></div>
+                <div class="reviews-head__label">Loved by racers across India — verified buyers only</div>
+            </div>
+        </div>
+        <div class="review-rail">
+            <div class="review-card">
+                <div class="review-card__stars">★★★★★</div>
+                <p class="review-card__text">It got damaged by my own mistake, but the lifetime repair card covered it —
+                    I only paid delivery and got a new car, plus another free service card. Solid aftercare.</p>
+                <div class="review-card__meta">
+                    <div class="avatar">I</div>
+                    <div>
+                        <div class="review-card__who">Ishanraj</div>
+                        <div class="review-card__product">Ghost — RC Drift Car</div>
+                    </div><span class="verified">✓ Verified</span>
+                </div>
+            </div>
+            <div class="review-card">
+                <div class="review-card__stars">★★★★★</div>
+                <p class="review-card__text">Third purchase from this brand now. I love the overall experience and the
+                    build quality — genuinely a big L.O.T fan at this point.</p>
+                <div class="review-card__meta">
+                    <div class="avatar">D</div>
+                    <div>
+                        <div class="review-card__who">Dalleee</div>
+                        <div class="review-card__product">Rift — RC Excavator</div>
+                    </div><span class="verified">✓ Verified</span>
+                </div>
+            </div>
+            <div class="review-card">
+                <div class="review-card__stars">★★★★★</div>
+                <p class="review-card__text">Bought this as a "desk toy." My desk hasn't seen actual work since — ten
+                    minutes turned into an hour of digging pretend trenches. Zero regrets.</p>
+                <div class="review-card__meta">
+                    <div class="avatar">M</div>
+                    <div>
+                        <div class="review-card__who">Moon</div>
+                        <div class="review-card__product">Rift — RC Excavator</div>
+                    </div><span class="verified">✓ Verified</span>
+                </div>
+            </div>
+            <div class="review-card">
+                <div class="review-card__stars">★★★★★</div>
+                <p class="review-card__text">Impressed with the attention to detail — 13-channel controls make it feel
+                    like operating a real excavator. Genuinely great build quality.</p>
+                <div class="review-card__meta">
+                    <div class="avatar">P</div>
+                    <div>
+                        <div class="review-card__who">Pri</div>
+                        <div class="review-card__product">Rift — RC Excavator</div>
+                    </div><span class="verified">✓ Verified</span>
+                </div>
+            </div>
+            <div class="review-card">
+                <div class="review-card__stars">★★★★★</div>
+                <p class="review-card__text">Nice 1:64 RC construction truck, great for indoor and outdoor play. Good
+                    sound and lights, and the controls are responsive.</p>
+                <div class="review-card__meta">
+                    <div class="avatar">K</div>
+                    <div>
+                        <div class="review-card__who">Karthik</div>
+                        <div class="review-card__product">Rumble — RC Dumptruck</div>
+                    </div><span class="verified">✓ Verified</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== NEWSLETTER (fixed: real incentive stated + working form) ===== -->
+    <section class="section" id="newsletter">
+        <div class="newsletter">
+            <h3>Get 5% off your first build</h3>
+            <p>Join the pit crew for early drops, restock alerts, and the L.O.T Build waitlist. No spam — just what's
+                new on the track.</p>
+            <form id="newsForm">
+                <input type="email" id="newsEmail" placeholder="you@email.com" required>
+                <button type="submit" class="btn btn--primary btn--full">Send me the code</button>
+            </form>
+            <div class="form-note">By subscribing you agree to receive marketing emails. Unsubscribe anytime.</div>
+        </div>
+    </section>
+
+    <div class="checker-strip"></div>
+
+    <!-- ===== FOOTER (redesigned: full column structure + social links) ===== -->
+    <footer id="footer">
+        <div class="footer-inner wrap" style="max-width:var(--container); margin:0 auto;">
+            <div class="footer-brand">
+                <a href="#top" class="nav__logo"><img
+                        src="data:image/png;base64,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"
+                        alt="Legend of Toys" class="nav__logo-img"></a>
+                <p>Premium remote-control machines, built to thrill — bench-tested, BIS certified, and backed by
+                    lifetime support. Designed and made in India.</p>
+                <div class="footer-india">🇮🇳 Made in India</div>
+                <div class="social-row">
+                    <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="5" />
+                            <circle cx="12" cy="12" r="4" />
+                            <circle cx="17.5" cy="6.5" r="1" />
+                        </svg></a>
+                    <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="2" y="5" width="20" height="14" rx="4" />
+                            <path d="M10 9l6 3-6 3z" fill="currentColor" stroke="none" />
+                        </svg></a>
+                    <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M15 4h-2a4 4 0 00-4 4v3H7v4h2v7h4v-7h3l1-4h-4V8a1 1 0 011-1h3z" />
+                        </svg></a>
+                    <a href="#" aria-label="X / Twitter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M4 4l16 16M20 4L4 20" />
+                        </svg></a>
+                </div>
+            </div>
+
+            <div class="footer-cols">
+                <div class="footer-col">
+                    <h4>SHOP</h4>
+                    <ul>
+                        <li><a href="#categories">Drift RC Cars</a></li>
+                        <li><a href="#categories">Off-Road & Trucks</a></li>
+                        <li><a href="#categories">RC Construction</a></li>
+                        <li><a href="#categories">Drones</a></li>
+                        <li><a href="#categories">Spare Parts</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>COMPANY</h4>
+                    <ul>
+                        <li><a href="#">About L.O.T</a></li>
+                        <li><a href="#">L.O.T Promise</a></li>
+                        <li><a href="#">L.O.T Comics</a></li>
+                        <li><a href="#">L.O.T Universe</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>SUPPORT</h4>
+                    <ul>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">FAQs</a></li>
+                        <li><a href="#">Shipping Policy</a></li>
+                        <li><a href="#">Returns & Refunds</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom wrap" style="max-width:var(--container); margin:0 auto;">
+            <div class="footer-bottom__copy">© 2026 Legend of Toys. All rights reserved.</div>
+            <div class="pay-row">
+                <span class="pay-chip">VISA</span><span class="pay-chip">MASTERCARD</span><span
+                    class="pay-chip">RUPAY</span><span class="pay-chip">AMEX</span><span class="pay-chip">UPI</span>
+            </div>
+            <button class="to-top" id="toTop" aria-label="Back to top">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <path d="M12 19V5M5 12l7-7 7 7" />
+                </svg>
+            </button>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 6L9 17l-5-5" />
+        </svg>
+        <span id="toastMsg">Added to cart</span>
+    </div>
+
+    <script>
+        // drawer
+        const drawer = document.getElementById('drawer');
+        const overlay = document.getElementById('drawerOverlay');
+        function openDrawer() { drawer.classList.add('open'); overlay.classList.add('open'); }
+        function closeDrawer() { drawer.classList.remove('open'); overlay.classList.remove('open'); }
+        document.getElementById('drawerToggle').addEventListener('click', openDrawer);
+        document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+        overlay.addEventListener('click', closeDrawer);
+        drawer.querySelectorAll('a').forEach(a => a.addEventListener('click', closeDrawer));
+
+        // search bar
+        const searchBar = document.getElementById('searchBar');
+        document.getElementById('searchToggle').addEventListener('click', () => searchBar.classList.toggle('open'));
+
+        // hero dots + autoplay
+        const heroSlides = document.getElementById('heroSlides');
+        const dotsWrap = document.getElementById('heroDots');
+        const slideCount = heroSlides.children.length;
+        for (let i = 0; i < slideCount; i++) {
+            const b = document.createElement('button');
+            if (i === 0) b.classList.add('active');
+            b.addEventListener('click', () => heroSlides.scrollTo({ left: i * heroSlides.clientWidth, behavior: 'smooth' }));
+            dotsWrap.appendChild(b);
+        }
+        function updateDots() {
+            const idx = Math.round(heroSlides.scrollLeft / heroSlides.clientWidth);
+            [...dotsWrap.children].forEach((d, i) => d.classList.toggle('active', i === idx));
+        }
+        heroSlides.addEventListener('scroll', updateDots);
+        let autoIdx = 0;
+        setInterval(() => {
+            autoIdx = (autoIdx + 1) % slideCount;
+            heroSlides.scrollTo({ left: autoIdx * heroSlides.clientWidth, behavior: 'smooth' });
+        }, 5500);
+
+        // toast helper
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toastMsg');
+        let toastTimer;
+        function showToast(msg) {
+            toastMsg.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+        }
+        function addToCart(name) { showToast(name + ' added to cart'); }
+
+        // newsletter / waitlist form
+        document.getElementById('newsForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            showToast("You're on the list — check your inbox!");
+            this.reset();
+        });
+
+        // back to top
+        document.getElementById('toTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+        // category tile tread pattern
+        document.querySelectorAll('.cat-card').forEach(c => {
+            const p = document.createElement('div');
+            p.className = 'cat-card__pattern';
+            p.style.backgroundImage = "repeating-linear-gradient(45deg, rgba(0,0,0,0.08) 0 2px, transparent 2px 8px)";
+            c.prepend(p);
+        });
+
+        // ---------- intro loader ----------
+        (function () {
+            const loader = document.getElementById('loader');
+            const ring = document.getElementById('loaderRing');
+            const pctEl = document.getElementById('loaderPct');
+            const captionEl = document.getElementById('loaderCaption');
+            const flash = document.getElementById('loaderFlash');
+            if (!loader) return;
+
+            const r = 80;
+            const circumference = 2 * Math.PI * r;
+            ring.style.strokeDasharray = circumference;
+            ring.style.strokeDashoffset = circumference;
+
+            const captions = ["IGNITING ENGINE…", "GRIPPING THE TARMAC…", "CHECKING TYRE PRESSURE…", "CLEARING THE PIT LANE…", "LIGHTS OUT, AWAY WE GO…"];
+            document.body.classList.add('loading');
+
+            const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const duration = reduceMotion ? 500 : 2200;
+            const start = performance.now();
+            let finished = false;
+
+            function frame(now) {
+                const elapsed = now - start;
+                const progress = Math.min(100, Math.floor((elapsed / duration) * 100));
+                const offset = circumference - (circumference * progress / 100);
+                ring.style.strokeDashoffset = offset;
+                pctEl.textContent = progress + '%';
+                captionEl.textContent = captions[Math.min(captions.length - 1, Math.floor(progress / (100 / captions.length)))];
+                if (progress < 100) {
+                    requestAnimationFrame(frame);
+                } else if (!finished) {
+                    finished = true;
+                    finish();
+                }
+            }
+
+            // Zoom the logo in only partway (avoids a blurry, over-scaled PNG),
+            // then punch to a quick white flash and reveal the homepage underneath.
+            function finish() {
+                setTimeout(() => {
+                    loader.classList.add('zoom');
+                    setTimeout(() => {
+                        flash.classList.add('show');
+                        setTimeout(() => {
+                            loader.classList.add('hide');
+                            document.body.classList.remove('loading');
+                            setTimeout(() => {
+                                loader.classList.add('done');
+                                flash.classList.add('fade');
+                                setTimeout(() => { flash.classList.add('done'); }, 600);
+                            }, 40);
+                        }, reduceMotion ? 60 : 220);
+                    }, reduceMotion ? 80 : 500);
+                }, reduceMotion ? 100 : 300);
+            }
+
+            requestAnimationFrame(frame);
+
+            // hard fallback so the page is never permanently stuck behind the loader
+            setTimeout(() => {
+                if (!finished) {
+                    finished = true;
+                    loader.classList.add('zoom', 'hide', 'done');
+                    flash.classList.add('done');
+                    document.body.classList.remove('loading');
+                }
+            }, 6000);
+        })();
+
+        // ---------- stats count-up on scroll ----------
+        (function () {
+            const nums = document.querySelectorAll('.stats-strip__num');
+            if (!nums.length) return;
+            function animateCount(el) {
+                const target = parseFloat(el.dataset.target);
+                const divide = parseFloat(el.dataset.divide || 1);
+                const suffix = el.dataset.suffix || '';
+                const duration = 1300;
+                const start = performance.now();
+                function step(now) {
+                    const p = Math.min(1, (now - start) / duration);
+                    const eased = 1 - Math.pow(1 - p, 3);
+                    const val = target * eased / divide;
+                    el.textContent = (divide > 1 ? val.toFixed(1) : Math.round(val).toLocaleString('en-IN')) + suffix;
+                    if (p < 1) requestAnimationFrame(step);
+                }
+                requestAnimationFrame(step);
+            }
+            if ('IntersectionObserver' in window) {
+                const io = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) { animateCount(entry.target); io.unobserve(entry.target); }
+                    });
+                }, { threshold: 0.5 });
+                nums.forEach(el => io.observe(el));
+            } else {
+                nums.forEach(animateCount);
+            }
+        })();
+
+        // ---------- find your ride quiz ----------
+        (function () {
+            const card = document.getElementById('quizCard');
+            if (!card) return;
+            const steps = [...card.querySelectorAll('.quiz-step')];
+            const resultStep = card.querySelector('.quiz-result');
+            const progressFill = document.getElementById('quizProgressFill');
+            const resultCard = document.getElementById('quizResultCard');
+            const restartBtn = document.getElementById('quizRestart');
+            const addCartBtn = document.getElementById('quizAddCart');
+            const answers = {};
+            let stepIndex = 0;
+
+            const catalog = {
+                knox: { name: 'L.O.T Cars Knox — Off-Road RC Truck', price: '₹1,599', img: 'https://www.legendoftoys.com/cdn/shop/files/Asset_16_1647a943-9a25-4169-bfce-7da7348ba3f0.webp?v=1783498448&width=1501', blurb: 'All-terrain grip and reinforced suspension — built to handle rougher ground without flinching.' },
+                ghost: { name: 'L.O.T Cars Ghost — RC Drift Car', price: '₹2,099', img: 'https://www.legendoftoys.com/cdn/shop/files/Asset_37.webp?v=1779879531&width=1501', blurb: 'Our fastest drift build, with LED underglow — made for racers who already know their way around a throttle.' },
+                flare2: { name: 'L.O.T Cars Flare 2.0 — RC Drift Car', price: '₹2,199', img: 'https://www.legendoftoys.com/cdn/shop/files/Burnout_green_cc37e491-35c7-4871-85c1-e701d0f147fb.webp?v=1783664258&width=2048', blurb: '4WD drift performance that\'s forgiving enough to learn on and quick enough to grow into.' },
+                shadow: { name: 'L.O.T Cars Shadow — RC Drift Car', price: '₹2,199', img: 'https://www.legendoftoys.com/cdn/shop/files/Asset_22_1_7e724842-fa51-458b-827e-7f9b9a9fbac4.webp?v=1783517103&width=1501', blurb: 'The best-looking car in the lineup, tuned for smooth, stylish slides on clean, flat ground.' },
+                fang: { name: 'L.O.T Cars Fang — 6-Channel RC Excavator', price: '₹1,999', img: 'https://www.legendoftoys.com/cdn/shop/files/fang.webp?v=1771092286&width=1501', blurb: '13-channel control and a heavy-duty build — the toughest thing in the L.O.T lineup.' },
+                dash: { name: 'L.O.T Cars Dash — Mini RC Car', price: '₹2,099', img: 'https://www.legendoftoys.com/cdn/shop/files/Asset_5_1.webp?v=1783517689&width=1501', blurb: '1:64 scale and easy to control indoors — a low-stakes, high-fun place to start.' }
+            };
+
+            function pickProduct() {
+                if (answers.terrain === 'outdoor') return catalog.knox;
+                if (answers.priority === 'tough') return catalog.fang;
+                if (answers.priority === 'style') return catalog.shadow;
+                if (answers.priority === 'speed') return answers.skill === 'pro' ? catalog.ghost : catalog.flare2;
+                return catalog.dash;
+            }
+
+            function showStep(i) {
+                steps.forEach((s, idx) => s.classList.toggle('active', idx === i));
+                resultStep.classList.remove('active');
+                progressFill.style.width = ((i) / steps.length * 100) + '%';
+            }
+
+            function showResult() {
+                steps.forEach(s => s.classList.remove('active'));
+                progressFill.style.width = '100%';
+                const p = pickProduct();
+                resultCard.innerHTML =
+                    '<img src="' + p.img + '" alt="' + p.name + '">' +
+                    '<div class="quiz-result__name">' + p.name.split('—')[0].trim() + '</div>' +
+                    '<div class="quiz-result__price">' + p.price + '</div>' +
+                    '<div class="quiz-result__blurb">' + p.blurb + '</div>';
+                addCartBtn.onclick = () => showToast(p.name.split('—')[0].trim() + ' added to cart');
+                resultStep.classList.add('active');
+            }
+
+            card.querySelectorAll('.quiz-opt').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    answers[btn.dataset.key] = btn.dataset.value;
+                    stepIndex++;
+                    if (stepIndex < steps.length) {
+                        showStep(stepIndex);
+                    } else {
+                        showResult();
+                    }
+                });
+            });
+
+            restartBtn.addEventListener('click', () => {
+                stepIndex = 0;
+                Object.keys(answers).forEach(k => delete answers[k]);
+                showStep(0);
+            });
+        })();
+    </script>
+
+</body>
+
+</html>
